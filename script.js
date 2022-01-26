@@ -1,73 +1,85 @@
-let cell = [];
-let cell_data = [];
-let player_turn;
+const informations = document.querySelector('.informations');
+const cellules = document.querySelectorAll('.cell');
 
-for (i = 0; i < 9; i++) {
-    cell[i] = document.getElementById('c' + i);
-    cell[i].addEventListener('click', function (event) {
-        if (player_turn === 0) {
-            this.innerHTML = 'X';
-        }
-        else {
-            this.innerHTML = 'O';
-        }
-    });
-}
+let verrouillage = true;
+let joueurEnCours = 'X'; // Le premier joueur utilise les X
 
-function check() {
-    if (cell_data[0] && cell_data[1] && cell_data[2] === 1) {
-        document.getElementsByClassName("informations")[0].innerHTML = "Tu as gagné !"
+informations.innerHTML = `Au tour de ${joueurEnCours}`;
+
+// On stock les alignements gagnants dans un tableau de tableau
+const alignementsGagnants = [
+    [0,1,2],
+    [3,4,5],
+    [6,7,8],
+    [0,3,6],
+    [1,4,7],
+    [2,5,8],
+    [0,4,8],
+    [2,4,6]
+]
+
+// Tableau avec les cases qu'on va cocher par la suite (croix ou cercle).
+let partieEnCours = ["", "", "", "", "", "", "", "", ""];
+
+cellules.forEach(cell => {
+    cell.addEventListener('click', clicSurCase);
+})
+
+function clicSurCase(e) {
+    const caseCliquee = e.target; // Case sur laquelle on est en train de cliquer
+    const caseDataIndex = caseCliquee.getAttribute('data-index');
+
+    // Si j'ai déja cliqué sur une case et qu'il y a sonc quelque chose à l'intérieur, je return parce-que je ne veux pas que la fonction s'appelle à chaque fois.
+    if (partieEnCours[caseDataIndex] !== "" || !verrouillage) {
+        return;
     }
 
-    if (player_turn === 0) {
-        player_turn = 1;
+    partieEnCours[caseDataIndex] = joueurEnCours;
+    caseCliquee.innerHTML = joueurEnCours;
+    console.log(partieEnCours);
+
+    validationResultat();
+}
+
+function validationResultat() {
+    let finDePartie = false;
+
+    // On va itérer à travers nos 8 combinaisons gagnantes
+    for(let i = 0; i < alignementsGagnants.length; i++) {
+        const checkWin = alignementsGagnants[i];
+        // Première itération on est sur [0,1,2]
+        // On va stocker les trois valeurs du tableau dans tois variables différentes et vérifier ensuite s'il s'agit d'un alignement gagnant ou non
+
+        let a = partieEnCours[checkWin[0]];
+        let b = partieEnCours[checkWin[1]];
+        let c = partieEnCours[checkWin[2]];
+
+        if (a === '' || b === '' || c === ''){
+            continue;
+        } // Si nos éléments sont alignés, si on a un alignement gagnant alors a, b et c seront tous les trois égaux.
+        if (a === b && b === c){
+            finDePartie = true;
+            break;
+        }    
     }
-    else {
-        player_turn = 0;
+
+    if(finDePartie) {
+        informations.innerText = `Le joueur ${joueurEnCours} a gagné !`
+        verrouillage = false;
+        return;
     }
+
+    let matchNul = !partieEnCours.includes('');
+    if(matchNul){
+        informations.innerText = "Match nul !";
+        verrouillage = false;
+        return;
+    }
+
+    changementDeJoueur();
 }
 
-function zero() {
-    cell_data[0] = 1
-    check();
-}
-
-function one() {
-    cell_data[1] = 1
-    check();
-}
-
-function two() {
-    cell_data[2] = 1
-    check();
-}
-
-function three() {
-    cell_data[3] = 1
-    check();
-}
-
-function four() {
-    cell_data[4] = 1
-    check();
-}
-
-function five() {
-    cell_data[5] = 1
-    check();
-}
-
-function six() {
-    cell_data[6] = 1
-    check();
-}
-
-function seven() {
-    cell_data[7] = 1
-    check();
-}
-
-function eight() {
-    cell_data[8] = 1
-    check();
+function changementDeJoueur() {
+    joueurEnCours = (joueurEnCours === "X") ? "O" : "X";
+    informations.innerText = `Au tour de ${joueurEnCours}`;
 }
